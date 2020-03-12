@@ -3,13 +3,10 @@
 // I2C bus
 DWire I2Cinternal(0);
 INA226 powerBus(I2Cinternal, 0x40);
-INA226 torquerX(I2Cinternal, 0x41);
-INA226 torquerY(I2Cinternal, 0x42);
-INA226 torquerZ(I2Cinternal, 0x43);
 TMP100 temp(I2Cinternal, 0x48);
 
 // SPI bus
-DSPI spi(3);
+// DSPI spi(3);
 //MB85RS fram(spi, GPIO_PORT_P1, GPIO_PIN0 );
 
 // Bootloader
@@ -92,14 +89,11 @@ void main(void)
     I2Cinternal.begin();
 
     // Initialize SPI master
-    spi.initMaster(DSPI::MODE0, DSPI::MSBFirst, 1000000);
+    //spi.initMaster(DSPI::MODE0, DSPI::MSBFirst, 1000000);
     //fram.init();
 
     // initialize the shunt resistor
     powerBus.setShuntResistor(40);
-    torquerX.setShuntResistor(40);
-    torquerY.setShuntResistor(40);
-    torquerZ.setShuntResistor(40);
 
     // initialize temperature sensor
     temp.init();
