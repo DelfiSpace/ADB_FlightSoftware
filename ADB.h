@@ -8,7 +8,7 @@
 #ifndef ADB_H_
 #define ADB_H_
 
-#include <ADBCTelemetryContainer.h>
+#include <ADBTelemetryContainer.h>
 #include <driverlib.h>
 #include "SLOT_SELECT.h"
 #include "SoftwareUpdateService.h"
@@ -30,7 +30,6 @@
 #include "TMP100.h"
 #include "DSPI.h"
 #include "MB85RS.h"
-#include "TestService.h"
 #include "PeriodicTaskNotifier.h"
 
 #define FCLOCK 48000000
@@ -38,7 +37,7 @@
 #define ADCS_ADDRESS     5
 
 // callback functions
-void acquireTelemetry(OBCTelemetryContainer *tc);
+void acquireTelemetry(ADBTelemetryContainer *tc);
 void periodicTask();
 
 #endif /* ADB_H_ */

@@ -5,17 +5,17 @@
  *      Author: stefanosperett
  */
 
-#ifndef ADBCTELEMETRYCONTAINER_H_
-#define ADBCTELEMETRYCONTAINER_H_
+#ifndef ADBTELEMETRYCONTAINER_H_
+#define ADBTELEMETRYCONTAINER_H_
 
 #include "TelemetryContainer.h"
 
-#define ADCS_CONTAINER_SIZE  26
+#define ADB_CONTAINER_SIZE  26
 
-class OBCTelemetryContainer : public TelemetryContainer
+class ADBTelemetryContainer : public TelemetryContainer
 {
 protected:
-    unsigned char telemetry[ADCS_CONTAINER_SIZE];
+    unsigned char telemetry[ADB_CONTAINER_SIZE];
 
 public:
     virtual int size();

@@ -24,8 +24,8 @@ DSerial serial;
 // services running in the system
 PingService ping;
 //ResetService reset( GPIO_PORT_P4, GPIO_PIN0, &fram );
-ResetService reset( GPIO_PORT_P4, GPIO_PIN0)
-HousekeepingService<OBCTelemetryContainer> hk;
+ResetService reset( GPIO_PORT_P4, GPIO_PIN0);
+HousekeepingService<ADBTelemetryContainer> hk;
 //SoftwareUpdateService SWupdate(fram);
 Service* services[] = { &ping, &reset, &hk};
 
@@ -72,7 +72,7 @@ void periodicTask()
 
 }
 
-void acquireTelemetry(OBCTelemetryContainer *tc)
+void acquireTelemetry(ADBTelemetryContainer *tc)
 {
 
 }

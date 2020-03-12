@@ -1,23 +1,23 @@
 /*
- * OBCTelemetryContainer.cpp
+ * ADBTelemetryContainer.cpp
  *
  *  Created on: 5 Aug 2019
  *      Author: stefanosperett
  */
 
-#include <ADBCTelemetryContainer.h>
+#include <ADBTelemetryContainer.h>
 
-int OBCTelemetryContainer::size()
+int ADBTelemetryContainer::size()
 {
-    return ADCS_CONTAINER_SIZE;
+    return ADB_CONTAINER_SIZE;
 }
 
-unsigned char* OBCTelemetryContainer::getArray()
+unsigned char* ADBTelemetryContainer::getArray()
 {
     return &telemetry[0];
 }
 
-unsigned long OBCTelemetryContainer::getUpTime()
+unsigned long ADBTelemetryContainer::getUpTime()
 {
     unsigned long ulong;
     ((unsigned char *)&ulong)[3] = telemetry[0];
@@ -27,7 +27,7 @@ unsigned long OBCTelemetryContainer::getUpTime()
     return ulong;
 }
 
-void OBCTelemetryContainer::setUpTime(unsigned long ulong)
+void ADBTelemetryContainer::setUpTime(unsigned long ulong)
 {
     *((unsigned long *)&(telemetry[0])) = ulong;
     telemetry[0] = ((unsigned char *)&ulong)[3];
@@ -36,62 +36,62 @@ void OBCTelemetryContainer::setUpTime(unsigned long ulong)
     telemetry[3] = ((unsigned char *)&ulong)[0];
 }
 
-bool OBCTelemetryContainer::getBusStatus()
+bool ADBTelemetryContainer::getBusStatus()
 {
     return ((telemetry[7] & 0x02) != 0);
 }
 
-void OBCTelemetryContainer::setBusStatus(bool bval)
+void ADBTelemetryContainer::setBusStatus(bool bval)
 {
     telemetry[7] &= (~0x02);
     telemetry[7] |= bval ? 0x02 : 0x00;
 }
 
-bool OBCTelemetryContainer::getTorquerXStatus()
+bool ADBTelemetryContainer::getTorquerXStatus()
 {
     return ((telemetry[7] & 0x04) != 0);
 }
 
-void OBCTelemetryContainer::setTorquerXStatus(bool bval)
+void ADBTelemetryContainer::setTorquerXStatus(bool bval)
 {
     telemetry[7] &= (~0x04);
     telemetry[7] |= bval ? 0x04 : 0x00;
 }
 
-bool OBCTelemetryContainer::getTorquerYStatus()
+bool ADBTelemetryContainer::getTorquerYStatus()
 {
     return ((telemetry[7] & 0x08) != 0);
 }
 
-void OBCTelemetryContainer::setTorquerYStatus(bool bval)
+void ADBTelemetryContainer::setTorquerYStatus(bool bval)
 {
     telemetry[7] &= (~0x08);
     telemetry[7] |= bval ? 0x08 : 0x00;
 }
 
-bool OBCTelemetryContainer::getTorquerZStatus()
+bool ADBTelemetryContainer::getTorquerZStatus()
 {
     return ((telemetry[7] & 0x10) != 0);
 }
 
-void OBCTelemetryContainer::setTorquerZStatus(bool bval)
+void ADBTelemetryContainer::setTorquerZStatus(bool bval)
 {
     telemetry[7] &= (~0x10);
     telemetry[7] |= bval ? 0x10 : 0x00;
 }
 
-bool OBCTelemetryContainer::getTmpStatus()
+bool ADBTelemetryContainer::getTmpStatus()
 {
     return ((telemetry[7] & 0x01) != 0);
 }
 
-void OBCTelemetryContainer::setTmpStatus(bool bval)
+void ADBTelemetryContainer::setTmpStatus(bool bval)
 {
     telemetry[7] &= (~0x01);
     telemetry[7] |= bval ? 0x01 : 0x00;
 }
 
-signed short OBCTelemetryContainer::getBusCurrent()
+signed short ADBTelemetryContainer::getBusCurrent()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[16];
@@ -99,13 +99,13 @@ signed short OBCTelemetryContainer::getBusCurrent()
     return ushort;
 }
 
-void OBCTelemetryContainer::setBusCurrent(signed short ushort)
+void ADBTelemetryContainer::setBusCurrent(signed short ushort)
 {
     telemetry[16] = ((unsigned char *)&ushort)[1];
     telemetry[17] = ((unsigned char *)&ushort)[0];
 }
 
-unsigned short OBCTelemetryContainer::getBusVoltage()
+unsigned short ADBTelemetryContainer::getBusVoltage()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[24];
@@ -113,13 +113,13 @@ unsigned short OBCTelemetryContainer::getBusVoltage()
     return ushort;
 }
 
-void OBCTelemetryContainer::setBusVoltage(unsigned short ushort)
+void ADBTelemetryContainer::setBusVoltage(unsigned short ushort)
 {
     telemetry[24] = ((unsigned char *)&ushort)[1];
     telemetry[25] = ((unsigned char *)&ushort)[0];
 }
 
-signed short OBCTelemetryContainer::getTorquerXCurrent()
+signed short ADBTelemetryContainer::getTorquerXCurrent()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[14];
@@ -127,13 +127,13 @@ signed short OBCTelemetryContainer::getTorquerXCurrent()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerXCurrent(signed short ushort)
+void ADBTelemetryContainer::setTorquerXCurrent(signed short ushort)
 {
     telemetry[14] = ((unsigned char *)&ushort)[1];
     telemetry[15] = ((unsigned char *)&ushort)[0];
 }
 
-unsigned short OBCTelemetryContainer::getTorquerXVoltage()
+unsigned short ADBTelemetryContainer::getTorquerXVoltage()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[22];
@@ -141,13 +141,13 @@ unsigned short OBCTelemetryContainer::getTorquerXVoltage()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerXVoltage(unsigned short ushort)
+void ADBTelemetryContainer::setTorquerXVoltage(unsigned short ushort)
 {
     telemetry[22] = ((unsigned char *)&ushort)[1];
     telemetry[23] = ((unsigned char *)&ushort)[0];
 }
 
-signed short OBCTelemetryContainer::getTorquerYCurrent()
+signed short ADBTelemetryContainer::getTorquerYCurrent()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[12];
@@ -155,13 +155,13 @@ signed short OBCTelemetryContainer::getTorquerYCurrent()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerYCurrent(signed short ushort)
+void ADBTelemetryContainer::setTorquerYCurrent(signed short ushort)
 {
     telemetry[12] = ((unsigned char *)&ushort)[1];
     telemetry[13] = ((unsigned char *)&ushort)[0];
 }
 
-unsigned short OBCTelemetryContainer::getTorquerYVoltage()
+unsigned short ADBTelemetryContainer::getTorquerYVoltage()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[20];
@@ -169,13 +169,13 @@ unsigned short OBCTelemetryContainer::getTorquerYVoltage()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerYVoltage(unsigned short ushort)
+void ADBTelemetryContainer::setTorquerYVoltage(unsigned short ushort)
 {
     telemetry[20] = ((unsigned char *)&ushort)[1];
     telemetry[21] = ((unsigned char *)&ushort)[0];
 }
 
-signed short OBCTelemetryContainer::getTorquerZCurrent()
+signed short ADBTelemetryContainer::getTorquerZCurrent()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[16];
@@ -183,13 +183,13 @@ signed short OBCTelemetryContainer::getTorquerZCurrent()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerZCurrent(signed short ushort)
+void ADBTelemetryContainer::setTorquerZCurrent(signed short ushort)
 {
     telemetry[10] = ((unsigned char *)&ushort)[1];
     telemetry[11] = ((unsigned char *)&ushort)[0];
 }
 
-unsigned short OBCTelemetryContainer::getTorquerZVoltage()
+unsigned short ADBTelemetryContainer::getTorquerZVoltage()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[18];
@@ -197,13 +197,13 @@ unsigned short OBCTelemetryContainer::getTorquerZVoltage()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTorquerZVoltage(unsigned short ushort)
+void ADBTelemetryContainer::setTorquerZVoltage(unsigned short ushort)
 {
     telemetry[18] = ((unsigned char *)&ushort)[1];
     telemetry[19] = ((unsigned char *)&ushort)[0];
 }
 
-signed short OBCTelemetryContainer::getTemperature()
+signed short ADBTelemetryContainer::getTemperature()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[8];
@@ -211,7 +211,7 @@ signed short OBCTelemetryContainer::getTemperature()
     return ushort;
 }
 
-void OBCTelemetryContainer::setTemperature(signed short ushort)
+void ADBTelemetryContainer::setTemperature(signed short ushort)
 {
     telemetry[8] = ((unsigned char *)&ushort)[1];
     telemetry[9] = ((unsigned char *)&ushort)[0];
