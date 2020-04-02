@@ -31,6 +31,9 @@
 #include "DSPI.h"
 #include "MB85RS.h"
 #include "PeriodicTaskNotifier.h"
+#include "HWMonitor.h"
+#include "ADCManager.h"
+
 
 #define FCLOCK 48000000
 
