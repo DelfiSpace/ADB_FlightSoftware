@@ -6,13 +6,7 @@ INA226 powerBus(I2Cinternal, 0x40);
 TMP100 temp(I2Cinternal, 0x48);
 
 // SPI bus
-// DSPI spi(3);
-//MB85RS fram(spi, GPIO_PORT_P1, GPIO_PIN0 );
 HWMonitor hwMonitor;
-
-
-// Bootloader
-//Bootloader bootLoader = Bootloader(fram);
 
 // CDHS bus handler
 PQ9Bus pq9bus(3, GPIO_PORT_P9, GPIO_PIN0);
@@ -27,14 +21,11 @@ HousekeepingService<ADBTelemetryContainer> hk;
 Service* services[] = { &ping, &reset, &hk};
 
 // ADCS board tasks
-CommandHandler<PQ9Frame> cmdHandler(pq9bus, services, 3);
+CommandHandler<PQ9Frame, PQ9Message> cmdHandler(pq9bus, services, 3);
 PeriodicTask timerTask(1000, periodicTask);
 PeriodicTask* periodicTasks[] = {&timerTask};
 PeriodicTaskNotifier taskNotifier = PeriodicTaskNotifier(periodicTasks, 1);
 Task* tasks[] = { &timerTask, &cmdHandler };
-
-volatile bool cmdReceivedFlag = false;
-DataFrame* receivedFrame;
 
 // system uptime
 unsigned long uptime = 0;
@@ -42,9 +33,7 @@ unsigned long uptime = 0;
 // TODO: remove when bug in CCS has been solved
 void receivedCommand(DataFrame &newFrame)
 {
-    cmdReceivedFlag = true;
-    receivedFrame = &newFrame;
-    //cmdHandler.received(newFrame);
+    cmdHandler.received(newFrame);
 }
 
 void validCmd(void)
@@ -56,7 +45,6 @@ void periodicTask()
 {
     // increase the timer, this happens every second
     uptime++;
-    //tc->setMCUTemperature(hwMonitor.getMCUTemp());
 
     // collect telemetry
     hk.acquireTelemetry(acquireTelemetry);
@@ -72,6 +60,23 @@ void periodicTask()
 
 void acquireTelemetry(ADBTelemetryContainer *tc)
 {
+    unsigned short v;
+    signed short i, t;
+
+    // set uptime in telemetry
+    tc->setUptime(uptime);
+
+    // set MCU temperature
+    tc->setMCUTemp(hwMonitor.getMCUTemp());
+
+    // measure the power bus
+    tc->setADB_INA_Status((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
+    tc->setADBVoltage(v);
+    tc->setADBCurrent(i);
+
+    // acquire board temperature
+    tc->setADB_TMP_Status(!temp.getTemperature(t));
+    tc->setADBTemperature(t);
 
 }
 
@@ -94,10 +99,6 @@ void main(void)
     I2Cinternal.setFastMode();
     I2Cinternal.begin();
 
-    // Initialize SPI master
-    //spi.initMaster(DSPI::MODE0, DSPI::MSBFirst, 1000000);
-    //fram.init();
-
     // initialize the shunt resistor
     powerBus.setShuntResistor(40);
 
@@ -106,7 +107,7 @@ void main(void)
 
     // initialize the console
     Console::init(115200);
-    pq9bus.begin(115200, 3);     // baud rate: 115200 bps
+    pq9bus.begin(115200, ADB_ADDRESS);     // baud rate: 115200 bps
                                             // address ADB (3)
 
     //InitBootLoader!
@@ -134,7 +135,7 @@ void main(void)
     // every time a command is correctly processed, call the watch-dog
     // TODO: put back the lambda function after bug in CCS has been fixed
     //cmdHandler.onValidCommand([]{ reset.kickInternalWatchDog(); });
-    //cmdHandler.onValidCommand(&validCmd);
+    cmdHandler.onValidCommand(&validCmd);
 
     Console::log("ADB booting...SLOT: %d", (int) Bootloader::getCurrentSlot());
 

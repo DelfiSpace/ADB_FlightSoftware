@@ -17,6 +17,7 @@
 #include "DelfiPQcore.h"
 #include "PQ9Bus.h"
 #include "PQ9Frame.h"
+#include "PQ9Message.h"
 #include "DWire.h"
 #include "INA226.h"
 #include "Console.h"
@@ -37,7 +38,7 @@
 
 #define FCLOCK 48000000
 
-#define ADCS_ADDRESS     5
+#define ADB_ADDRESS     3
 
 // callback functions
 void acquireTelemetry(ADBTelemetryContainer *tc);
