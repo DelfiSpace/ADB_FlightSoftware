@@ -5,8 +5,13 @@ DWire I2Cinternal(0);
 INA226 powerBus(I2Cinternal, 0x40);
 TMP100 temp(I2Cinternal, 0x48);
 
-// SPI bus
-HWMonitor hwMonitor;
+DSPI spi(3);
+MB85RS fram(spi, GPIO_PORT_P1, GPIO_PIN0, MB85RS::MB85RS1MT );
+
+// HardwareMonitor
+HWMonitor hwMonitor(&fram);
+// Bootloader
+Bootloader bootLoader = Bootloader(fram);
 
 // CDHS bus handler
 PQ9Bus pq9bus(3, GPIO_PORT_P9, GPIO_PIN0);
@@ -14,14 +19,20 @@ PQ9Bus pq9bus(3, GPIO_PORT_P9, GPIO_PIN0);
 
 // services running in the system
 PingService ping;
-//ResetService reset( GPIO_PORT_P4, GPIO_PIN0, &fram );
-ResetService reset( GPIO_PORT_P4, GPIO_PIN0);
+ResetService reset( GPIO_PORT_P4, GPIO_PIN0, GPIO_PORT_P4, GPIO_PIN2 );
+
 HousekeepingService<ADBTelemetryContainer> hk;
-//SoftwareUpdateService SWupdate(fram);
-Service* services[] = { &ping, &reset, &hk};
+
+#ifndef SW_VERSION
+SoftwareUpdateService SWupdate(fram);
+#else
+SoftwareUpdateService SWupdate(fram, (uint8_t*)xtr(SW_VERSION));
+#endif
+
+Service* services[] = { &ping, &reset, &hk, &SWupdate};
 
 // ADCS board tasks
-CommandHandler<PQ9Frame, PQ9Message> cmdHandler(pq9bus, services, 3);
+CommandHandler<PQ9Frame, PQ9Message> cmdHandler(pq9bus, services, 4);
 PeriodicTask timerTask(1000, periodicTask);
 PeriodicTask* periodicTasks[] = {&timerTask};
 PeriodicTaskNotifier taskNotifier = PeriodicTaskNotifier(periodicTasks, 1);
@@ -105,13 +116,19 @@ void main(void)
     // initialize temperature sensor
     temp.init();
 
+    // Initialize SPI master
+    spi.initMaster(DSPI::MODE0, DSPI::MSBFirst, 1000000);
+
+    // Initialize fram and fram-variables
+    fram.init();
+
     // initialize the console
     Console::init(115200);
     pq9bus.begin(115200, ADB_ADDRESS);     // baud rate: 115200 bps
                                             // address ADB (3)
 
     //InitBootLoader!
-    //bootLoader.JumpSlot();
+    bootLoader.JumpSlot();
 
     // initialize the reset handler:
     // - prepare the watch-dog
