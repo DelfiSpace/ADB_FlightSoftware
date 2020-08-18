@@ -37,20 +37,20 @@ public:
     short getMCUTemp();
     void setMCUTemp(short var);
 
-    bool getADB_INA_Status();
-    void setADB_INA_Status(bool var);
+    bool getINAStatus();
+    void setINAStatus(bool var);
 
-    bool getADB_TMP_Status();
-    void setADB_TMP_Status(bool var);
+    bool getTMPStatus();
+    void setTMPStatus(bool var);
 
-    short getADBCurrent();
-    void setADBCurrent(short var);
+    short getCurrent();
+    void setCurrent(short var);
 
-    short getADBVoltage();
-    void setADBVoltage(short var);
+    short getVoltage();
+    void setVoltage(short var);
 
-    short getADBTemperature();
-    void setADBTemperature(short var);
+    short getTemperature();
+    void setTemperature(short var);
 
 };
 

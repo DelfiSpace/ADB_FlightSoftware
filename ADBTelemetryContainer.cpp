@@ -94,56 +94,56 @@ void ADBTelemetryContainer::setMCUTemp(short ushort)
     telemetry[14] = ((unsigned char *)&ushort)[1];
     telemetry[15] = ((unsigned char *)&ushort)[0];
 }
-bool ADBTelemetryContainer::getADB_INA_Status()
+bool ADBTelemetryContainer::getINAStatus()
 {
     return ((telemetry[16] & 0x02) != 0);
 }
-void ADBTelemetryContainer::setADB_INA_Status(bool bval)
+void ADBTelemetryContainer::setINAStatus(bool bval)
 {
     telemetry[16] &= (~0x02);
     telemetry[16] |= bval ? 0x02 : 0x00;
 }
-bool ADBTelemetryContainer::getADB_TMP_Status()
+bool ADBTelemetryContainer::getTMPStatus()
 {
     return ((telemetry[16] & 0x01) != 0);
 }
-void ADBTelemetryContainer::setADB_TMP_Status(bool bval)
+void ADBTelemetryContainer::setTMPStatus(bool bval)
 {
     telemetry[16] &= (~0x01);
     telemetry[16] |= bval ? 0x01 : 0x00;
 }
-short ADBTelemetryContainer::getADBCurrent()
+short ADBTelemetryContainer::getCurrent()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[17];
     ((unsigned char *)&ushort)[0] = telemetry[18];
     return ushort;
 }
-void ADBTelemetryContainer::setADBCurrent(short ushort)
+void ADBTelemetryContainer::setCurrent(short ushort)
 {
     telemetry[17] = ((unsigned char *)&ushort)[1];
     telemetry[18] = ((unsigned char *)&ushort)[0];
 }
-short ADBTelemetryContainer::getADBVoltage()
+short ADBTelemetryContainer::getVoltage()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[19];
     ((unsigned char *)&ushort)[0] = telemetry[20];
     return ushort;
 }
-void ADBTelemetryContainer::setADBVoltage(short ushort)
+void ADBTelemetryContainer::setVoltage(short ushort)
 {
     telemetry[19] = ((unsigned char *)&ushort)[1];
     telemetry[20] = ((unsigned char *)&ushort)[0];
 }
-short ADBTelemetryContainer::getADBTemperature()
+short ADBTelemetryContainer::getTemperature()
 {
     unsigned short ushort;
     ((unsigned char *)&ushort)[1] = telemetry[21];
     ((unsigned char *)&ushort)[0] = telemetry[22];
     return ushort;
 }
-void ADBTelemetryContainer::setADBTemperature(short ushort)
+void ADBTelemetryContainer::setTemperature(short ushort)
 {
     telemetry[21] = ((unsigned char *)&ushort)[1];
     telemetry[22] = ((unsigned char *)&ushort)[0];

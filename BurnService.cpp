@@ -41,7 +41,12 @@ BurnService::BurnService(MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestu
 
 bool BurnService::notified( void )
 {
-    return (burnFlag != 0) && execute;
+    if(execute)
+    {
+        execute = false;
+        return (burnFlag != 0);
+    }
+    return false;
 };
 
 void BurnService::taskFunction()
@@ -159,23 +164,32 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
         {
         case 0:
             Console::log("BurnService: isDeployed");
+            workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
             if(command.getPayloadSize() == 1)
             {
                 Console::log("Antenna1 %s", (isDeployed(1)?"YES":"NO") );
                 Console::log("Antenna2 %s", (isDeployed(2)?"YES":"NO") );
                 Console::log("Antenna3 %s", (isDeployed(3)?"YES":"NO") );
                 Console::log("Antenna4 %s", (isDeployed(4)?"YES":"NO") );
-                workingBuffer.getDataPayload()[0] = isDeployed(1) ? 1:0;
-                workingBuffer.getDataPayload()[1] = isDeployed(2) ? 1:0;
-                workingBuffer.getDataPayload()[2] = isDeployed(3) ? 1:0;
-                workingBuffer.getDataPayload()[3] = isDeployed(4) ? 1:0;
-                workingBuffer.setPayloadSize(4);
+                workingBuffer.getDataPayload()[0] |= (isDeployed(1) ? 1:0) << 3;
+                workingBuffer.getDataPayload()[0] |= (isDeployed(2) ? 1:0) << 2;
+                workingBuffer.getDataPayload()[0] |= (isDeployed(3) ? 1:0) << 1;
+                workingBuffer.getDataPayload()[0] |= (isDeployed(4) ? 1:0);
+                workingBuffer.setPayloadSize(2);
             }
             else if(command.getPayloadSize() == 2)
             {
-                Console::log("Antenna%d %s", command.getDataPayload()[1], (isDeployed(command.getDataPayload()[1])?"YES":"NO") );
-                workingBuffer.getDataPayload()[0] = isDeployed(command.getDataPayload()[1]) ? 1:0;
-                workingBuffer.setPayloadSize(1);
+                if(command.getDataPayload()[1] >= 1 && command.getDataPayload()[1] <= 4)
+                {
+                    Console::log("Antenna%d %s", command.getDataPayload()[1], (isDeployed(command.getDataPayload()[1])?"YES":"NO") );
+                    workingBuffer.getDataPayload()[1] = isDeployed(command.getDataPayload()[1]) ? 1:0;
+                    workingBuffer.setPayloadSize(2);
+                }
+                else
+                {
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                    workingBuffer.setPayloadSize(2);
+                }
             }
             else
             {
@@ -186,6 +200,7 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
             break;
         case 1:
             Console::log("BurnService: StartBurn");
+            workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
             if(burnFlag == 0)
             {
                 if(command.getPayloadSize() == 1)
@@ -193,115 +208,184 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
                     if(!isDeployed(1))
                     {
                         burnFlag = 1;
-                        workingBuffer.getDataPayload()[0] = 0;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                        workingBuffer.setPayloadSize(2);
                     }
                     else if(!isDeployed(2))
                     {
                         burnFlag = 2;
-                        workingBuffer.getDataPayload()[0] = 0;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                        workingBuffer.setPayloadSize(2);
                     }
                     else if(!isDeployed(3))
                     {
                         burnFlag = 3;
-                        workingBuffer.getDataPayload()[0] = 0;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                        workingBuffer.setPayloadSize(2);
                     }
                     else if(!isDeployed(4))
                     {
                         burnFlag = 4;
-                        workingBuffer.getDataPayload()[0] = 0;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                        workingBuffer.setPayloadSize(2);
                     }else{
                         Console::log("BurnService: Already Fully Deployed!");
-                        workingBuffer.getDataPayload()[0] = BURNSERVICE_ALREADY_DEPLOYED;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_ALREADY_DEPLOYED;
+                        workingBuffer.setPayloadSize(2);
                     }
                 }
                 else if(command.getPayloadSize() == 2)
                 {
-                    if(!isDeployed(command.getDataPayload()[1]))
+                    if(command.getDataPayload()[1] >= 1 && command.getDataPayload()[1] <= 4)
                     {
-                        burnFlag = command.getDataPayload()[1];
-                        workingBuffer.getDataPayload()[0] = 0;
-                        workingBuffer.setPayloadSize(1);
+
+                        if(!isDeployed(command.getDataPayload()[1]))
+                        {
+                            burnFlag = command.getDataPayload()[1];
+                            workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                            workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                            workingBuffer.setPayloadSize(2);
+                        }
+                        else
+                        {
+                            workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                            workingBuffer.getDataPayload()[1] = BURNSERVICE_ALREADY_DEPLOYED;
+                            workingBuffer.setPayloadSize(2);
+                        }
                     }
                     else
                     {
-                        workingBuffer.getDataPayload()[0] = BURNSERVICE_ALREADY_DEPLOYED;
-                        workingBuffer.setPayloadSize(1);
+                        workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                        workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                        workingBuffer.setPayloadSize(2);
                     }
                 }
                 else
                 {
                     //unknown command
-                    workingBuffer.getDataPayload()[0] = BURNSERVICE_UNKNOWN_CMD;
-                    workingBuffer.setPayloadSize(1);
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+                    workingBuffer.setPayloadSize(2);
                 }
             }
             else
             {
-                workingBuffer.getDataPayload()[0] = BURNSERVICE_ALREADY_BURNING;
-                workingBuffer.setPayloadSize(1);
+                workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                workingBuffer.getDataPayload()[1] = BURNSERVICE_ALREADY_BURNING;
+                workingBuffer.setPayloadSize(2);
             }
             break;
         case 2:
             Console::log("BurnService: getBurnTime");
-            switch(command.getDataPayload()[1])
+            if(command.getPayloadSize() == 2)
             {
-            case 1:
-                Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime1);
-                break;
-            case 2:
-                Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime1);
-                break;
-            case 3:
-                Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime1);
-                break;
-            case 4:
-                Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime1);
-                break;
-            default:
-                Console::log("Invalid Antenna");
-                break;
+                switch(command.getDataPayload()[1])
+                {
+                case 1:
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime1);
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = (uint8_t) burnTime1;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                case 2:
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime2);
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = (uint8_t) burnTime2;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                case 3:
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime3);
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = (uint8_t) burnTime3;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                case 4:
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) burnTime4);
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = (uint8_t) burnTime4;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                default:
+                    Console::log("Invalid Antenna");
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                }
+            }
+            else
+            {
+                workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+                workingBuffer.setPayloadSize(2);
             }
             break;
         case 3:
             Console::log("BurnService: resetBurnTime");
-            switch(command.getDataPayload()[1])
+            if(command.getPayloadSize() == 2)
             {
-            case 1:
-                Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
-                burnTime1 = 0;
-                break;
-            case 2:
-                Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
-                burnTime2 = 0;
-                break;
-            case 3:
-                Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
-                burnTime3 = 0;
-                break;
-            case 4:
-                Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
-                burnTime4 = 0;
-                break;
-            default:
-                Console::log("Invalid Antenna");
-                break;
+                switch(command.getDataPayload()[1])
+                {
+                case 1:
+                    Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
+                    workingBuffer.getDataPayload()[0] = 3;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                    workingBuffer.setPayloadSize(2);
+                    burnTime1 = 0;
+                    break;
+                case 2:
+                    Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
+                    workingBuffer.getDataPayload()[0] = 3;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                    workingBuffer.setPayloadSize(2);
+                    burnTime2 = 0;
+                    break;
+                case 3:
+                    Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
+                    workingBuffer.getDataPayload()[0] = 3;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                    workingBuffer.setPayloadSize(2);
+                    burnTime3 = 0;
+                    break;
+                case 4:
+                    Console::log("Antenna %d Reset Burntime", command.getDataPayload()[1]);
+                    workingBuffer.getDataPayload()[0] = 3;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                    workingBuffer.setPayloadSize(2);
+                    burnTime4 = 0;
+                    break;
+                default:
+                    Console::log("Invalid Antenna");
+                    workingBuffer.getDataPayload()[0] = 3;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                }
+            }
+            else
+            {
+                workingBuffer.getDataPayload()[0] = 3;
+                workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+                workingBuffer.setPayloadSize(2);
             }
             break;
         case 4:
-            Console::log("Antenna 1 High");
-            GPIO_setOutputHighOnPin(ANTENNA_PORT, ANTENNA1_BURN_PIN);
-            break;
-        case 5:
-            Console::log("Antenna 1 Low");
+            Console::log("BurnService: StopBurn");
             GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA1_BURN_PIN);
+            GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA2_BURN_PIN);
+            GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA3_BURN_PIN);
+            GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
+            burnFlag = 0;
+            workingBuffer.getDataPayload()[0] = 4;
+            workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+            workingBuffer.setPayloadSize(2);
             break;
         default:
             Console::log("BurnService: InvalidCommand");
+            workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+            workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+            workingBuffer.setPayloadSize(2);
+            break;
         }
         return true;
     }

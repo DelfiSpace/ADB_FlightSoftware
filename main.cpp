@@ -90,13 +90,13 @@ void acquireTelemetry(ADBTelemetryContainer *tc)
     tc->setMCUTemp(hwMonitor.getMCUTemp());
 
     // acquire board temperature
-    tc->setADB_TMP_Status(!temp.getTemperature(t));
-    tc->setADBTemperature(t);
+    tc->setTMPStatus(!temp.getTemperature(t));
+    tc->setTemperature(t);
 
     // measure the power bus
-    tc->setADB_INA_Status((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
-    tc->setADBVoltage(v);
-    tc->setADBCurrent(i);
+    tc->setINAStatus((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
+    tc->setVoltage(v);
+    tc->setCurrent(i);
 
 }
 
