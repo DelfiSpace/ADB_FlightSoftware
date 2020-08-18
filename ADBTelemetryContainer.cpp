@@ -12,95 +12,75 @@ unsigned char* ADBTelemetryContainer::getArray()
     return &telemetry[0];
 }
 
+char ADBTelemetryContainer::getStatus()
+{
+    return telemetry[0];
+}
+void ADBTelemetryContainer::setStatus(char uchar)
+{
+    telemetry[0] = uchar;
+}
+char ADBTelemetryContainer::getBootCounter()
+{
+    return telemetry[1];
+}
+void ADBTelemetryContainer::setBootCounter(char uchar)
+{
+    telemetry[1] = uchar;
+}
+long ADBTelemetryContainer::getResetCause()
+{
+    unsigned long ulong;
+    ((unsigned char *)&ulong)[2] = telemetry[2];
+    ((unsigned char *)&ulong)[1] = telemetry[3];
+    ((unsigned char *)&ulong)[0] = telemetry[4];
+    return ulong;
+}
+void ADBTelemetryContainer::setResetCause(long ulong)
+{
+    telemetry[2] = ((unsigned char *)&ulong)[2];
+    telemetry[3] = ((unsigned char *)&ulong)[1];
+    telemetry[4] = ((unsigned char *)&ulong)[0];
+}
 unsigned long ADBTelemetryContainer::getUptime()
 {
     unsigned long ulong;
-    ((unsigned char *)&ulong)[3] = telemetry[0];
-    ((unsigned char *)&ulong)[2] = telemetry[1];
-    ((unsigned char *)&ulong)[1] = telemetry[2];
-    ((unsigned char *)&ulong)[0] = telemetry[3];
+    ((unsigned char *)&ulong)[3] = telemetry[5];
+    ((unsigned char *)&ulong)[2] = telemetry[6];
+    ((unsigned char *)&ulong)[1] = telemetry[7];
+    ((unsigned char *)&ulong)[0] = telemetry[8];
     return ulong;
 }
 void ADBTelemetryContainer::setUptime(unsigned long ulong)
 {
-    telemetry[0] = ((unsigned char *)&ulong)[3];
-    telemetry[1] = ((unsigned char *)&ulong)[2];
-    telemetry[2] = ((unsigned char *)&ulong)[1];
-    telemetry[3] = ((unsigned char *)&ulong)[0];
+    telemetry[5] = ((unsigned char *)&ulong)[3];
+    telemetry[6] = ((unsigned char *)&ulong)[2];
+    telemetry[7] = ((unsigned char *)&ulong)[1];
+    telemetry[8] = ((unsigned char *)&ulong)[0];
 }
-short ADBTelemetryContainer::getBootCounter()
+unsigned long ADBTelemetryContainer::getTotalUptime()
 {
-    unsigned short ushort;
-    ((unsigned char *)&ushort)[1] = telemetry[4];
-    ((unsigned char *)&ushort)[0] = telemetry[5];
-    return ushort;
+    unsigned long ulong;
+    ((unsigned char *)&ulong)[3] = telemetry[9];
+    ((unsigned char *)&ulong)[2] = telemetry[10];
+    ((unsigned char *)&ulong)[1] = telemetry[11];
+    ((unsigned char *)&ulong)[0] = telemetry[12];
+    return ulong;
 }
-void ADBTelemetryContainer::setBootCounter(short ushort)
+void ADBTelemetryContainer::setTotalUptime(unsigned long ulong)
 {
-    telemetry[4] = ((unsigned char *)&ushort)[1];
-    telemetry[5] = ((unsigned char *)&ushort)[0];
+    telemetry[9] = ((unsigned char *)&ulong)[3];
+    telemetry[10] = ((unsigned char *)&ulong)[2];
+    telemetry[11] = ((unsigned char *)&ulong)[1];
+    telemetry[12] = ((unsigned char *)&ulong)[0];
 }
-char ADBTelemetryContainer::getSoftwareBootCounter()
+char ADBTelemetryContainer::getVersionNumber()
 {
-    return telemetry[6];
+    return telemetry[13];
 }
-void ADBTelemetryContainer::setSoftwareBootCounter(char uchar)
+void ADBTelemetryContainer::setVersionNumber(char uchar)
 {
-    telemetry[6] = uchar;
-}
-bool ADBTelemetryContainer::getADB_INA_Status()
-{
-    return ((telemetry[7] & 0x02) != 0);
-}
-void ADBTelemetryContainer::setADB_INA_Status(bool bval)
-{
-    telemetry[7] &= (~0x02);
-    telemetry[7] |= bval ? 0x02 : 0x00;
-}
-bool ADBTelemetryContainer::getADB_TMP_Status()
-{
-    return ((telemetry[7] & 0x01) != 0);
-}
-void ADBTelemetryContainer::setADB_TMP_Status(bool bval)
-{
-    telemetry[7] &= (~0x01);
-    telemetry[7] |= bval ? 0x01 : 0x00;
-}
-short ADBTelemetryContainer::getADBCurrent()
-{
-    unsigned short ushort;
-    ((unsigned char *)&ushort)[1] = telemetry[8];
-    ((unsigned char *)&ushort)[0] = telemetry[9];
-    return ushort;
-}
-void ADBTelemetryContainer::setADBCurrent(short ushort)
-{
-    telemetry[8] = ((unsigned char *)&ushort)[1];
-    telemetry[9] = ((unsigned char *)&ushort)[0];
-}
-short ADBTelemetryContainer::getADBVoltage()
-{
-    unsigned short ushort;
-    ((unsigned char *)&ushort)[1] = telemetry[10];
-    ((unsigned char *)&ushort)[0] = telemetry[11];
-    return ushort;
-}
-void ADBTelemetryContainer::setADBVoltage(short ushort)
-{
-    telemetry[10] = ((unsigned char *)&ushort)[1];
-    telemetry[11] = ((unsigned char *)&ushort)[0];
-}
-short ADBTelemetryContainer::getADBTemperature()
-{
-    unsigned short ushort;
-    ((unsigned char *)&ushort)[1] = telemetry[12];
-    ((unsigned char *)&ushort)[0] = telemetry[13];
-    return ushort;
-}
-void ADBTelemetryContainer::setADBTemperature(short ushort)
-{
-    telemetry[12] = ((unsigned char *)&ushort)[1];
-    telemetry[13] = ((unsigned char *)&ushort)[0];
+    telemetry[13] = uchar;
 }
 short ADBTelemetryContainer::getMCUTemp()
 {
@@ -113,4 +93,58 @@ void ADBTelemetryContainer::setMCUTemp(short ushort)
 {
     telemetry[14] = ((unsigned char *)&ushort)[1];
     telemetry[15] = ((unsigned char *)&ushort)[0];
+}
+bool ADBTelemetryContainer::getADB_INA_Status()
+{
+    return ((telemetry[16] & 0x02) != 0);
+}
+void ADBTelemetryContainer::setADB_INA_Status(bool bval)
+{
+    telemetry[16] &= (~0x02);
+    telemetry[16] |= bval ? 0x02 : 0x00;
+}
+bool ADBTelemetryContainer::getADB_TMP_Status()
+{
+    return ((telemetry[16] & 0x01) != 0);
+}
+void ADBTelemetryContainer::setADB_TMP_Status(bool bval)
+{
+    telemetry[16] &= (~0x01);
+    telemetry[16] |= bval ? 0x01 : 0x00;
+}
+short ADBTelemetryContainer::getADBCurrent()
+{
+    unsigned short ushort;
+    ((unsigned char *)&ushort)[1] = telemetry[17];
+    ((unsigned char *)&ushort)[0] = telemetry[18];
+    return ushort;
+}
+void ADBTelemetryContainer::setADBCurrent(short ushort)
+{
+    telemetry[17] = ((unsigned char *)&ushort)[1];
+    telemetry[18] = ((unsigned char *)&ushort)[0];
+}
+short ADBTelemetryContainer::getADBVoltage()
+{
+    unsigned short ushort;
+    ((unsigned char *)&ushort)[1] = telemetry[19];
+    ((unsigned char *)&ushort)[0] = telemetry[20];
+    return ushort;
+}
+void ADBTelemetryContainer::setADBVoltage(short ushort)
+{
+    telemetry[19] = ((unsigned char *)&ushort)[1];
+    telemetry[20] = ((unsigned char *)&ushort)[0];
+}
+short ADBTelemetryContainer::getADBTemperature()
+{
+    unsigned short ushort;
+    ((unsigned char *)&ushort)[1] = telemetry[21];
+    ((unsigned char *)&ushort)[0] = telemetry[22];
+    return ushort;
+}
+void ADBTelemetryContainer::setADBTemperature(short ushort)
+{
+    telemetry[21] = ((unsigned char *)&ushort)[1];
+    telemetry[22] = ((unsigned char *)&ushort)[0];
 }

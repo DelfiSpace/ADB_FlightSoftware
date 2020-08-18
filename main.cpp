@@ -20,8 +20,9 @@ PQ9Bus pq9bus(3, GPIO_PORT_P9, GPIO_PIN0);
 // services running in the system
 PingService ping;
 ResetService reset( GPIO_PORT_P4, GPIO_PIN0, GPIO_PORT_P4, GPIO_PIN2 );
-
+BurnService burnService(fram);
 HousekeepingService<ADBTelemetryContainer> hk;
+FRAMService framService(fram);
 
 #ifndef SW_VERSION
 SoftwareUpdateService SWupdate(fram);
@@ -29,17 +30,19 @@ SoftwareUpdateService SWupdate(fram);
 SoftwareUpdateService SWupdate(fram, (uint8_t*)xtr(SW_VERSION));
 #endif
 
-Service* services[] = { &ping, &reset, &hk, &SWupdate};
+Service* services[] = { &burnService, &framService, &ping, &reset, &hk, &SWupdate};
 
 // ADCS board tasks
-CommandHandler<PQ9Frame, PQ9Message> cmdHandler(pq9bus, services, 4);
+CommandHandler<PQ9Frame, PQ9Message> cmdHandler(pq9bus, services, 6);
 PeriodicTask timerTask(1000, periodicTask);
-PeriodicTask* periodicTasks[] = {&timerTask};
-PeriodicTaskNotifier taskNotifier = PeriodicTaskNotifier(periodicTasks, 1);
-Task* tasks[] = { &timerTask, &cmdHandler };
+PeriodicTask* periodicTasks[] = {&timerTask, &burnService};
+PeriodicTaskNotifier taskNotifier = PeriodicTaskNotifier(periodicTasks, 2);
+Task* tasks[] = { &timerTask, &cmdHandler, &burnService };
 
 // system uptime
 unsigned long uptime = 0;
+FRAMVar<unsigned long> totalUptime;
+
 
 // TODO: remove when bug in CCS has been solved
 void receivedCommand(DataFrame &newFrame)
@@ -56,6 +59,7 @@ void periodicTask()
 {
     // increase the timer, this happens every second
     uptime++;
+    totalUptime += 1;
 
     // collect telemetry
     hk.acquireTelemetry(acquireTelemetry);
@@ -73,21 +77,26 @@ void acquireTelemetry(ADBTelemetryContainer *tc)
 {
     unsigned short v;
     signed short i, t;
+    unsigned char uc;
 
-    // set uptime in telemetry
+    //HouseKeeping Header:
+    tc->setStatus(Bootloader::getCurrentSlot());
+    fram.read(FRAM_RESET_COUNTER + Bootloader::getCurrentSlot(), &uc, 1);
+    tc->setBootCounter(uc);
+    tc->setResetCause(hwMonitor.getResetStatus());
     tc->setUptime(uptime);
-
-    // set MCU temperature
+    tc->setTotalUptime((unsigned long) totalUptime);
+    tc->setVersionNumber(2);
     tc->setMCUTemp(hwMonitor.getMCUTemp());
+
+    // acquire board temperature
+    tc->setADB_TMP_Status(!temp.getTemperature(t));
+    tc->setADBTemperature(t);
 
     // measure the power bus
     tc->setADB_INA_Status((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
     tc->setADBVoltage(v);
     tc->setADBCurrent(i);
-
-    // acquire board temperature
-    tc->setADB_TMP_Status(!temp.getTemperature(t));
-    tc->setADBTemperature(t);
 
 }
 
@@ -121,6 +130,7 @@ void main(void)
 
     // Initialize fram and fram-variables
     fram.init();
+    totalUptime.init(fram, FRAM_TOTAL_UPTIME);
 
     // initialize the console
     Console::init(115200);
@@ -160,5 +170,5 @@ void main(void)
         Console::log("SW_VERSION: %s", (const char*)xtr(SW_VERSION));
     }
 
-    TaskManager::start(tasks, 2);
+    TaskManager::start(tasks, 3);
 }

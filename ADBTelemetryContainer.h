@@ -5,7 +5,7 @@
 
 #include "TelemetryContainer.h"
 
-#define ADB_CONTAINER_SIZE  16
+#define ADB_CONTAINER_SIZE  24
 
 class ADBTelemetryContainer : public TelemetryContainer
 {
@@ -16,14 +16,26 @@ public:
     virtual int size();
     virtual unsigned char * getArray();
 
+    char getStatus();
+    void setStatus(char var);
+
+    char getBootCounter();
+    void setBootCounter(char var);
+
+    long getResetCause();
+    void setResetCause(long var);
+
     unsigned long getUptime();
     void setUptime(unsigned long var);
 
-    short getBootCounter();
-    void setBootCounter(short var);
+    unsigned long getTotalUptime();
+    void setTotalUptime(unsigned long var);
 
-    char getSoftwareBootCounter();
-    void setSoftwareBootCounter(char var);
+    char getVersionNumber();
+    void setVersionNumber(char var);
+
+    short getMCUTemp();
+    void setMCUTemp(short var);
 
     bool getADB_INA_Status();
     void setADB_INA_Status(bool var);
@@ -39,9 +51,6 @@ public:
 
     short getADBTemperature();
     void setADBTemperature(short var);
-
-    short getMCUTemp();
-    void setMCUTemp(short var);
 
 };
 
