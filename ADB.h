@@ -36,7 +36,7 @@
 #include "ADCManager.h"
 #include "BurnService.h"
 #include "FRAMService.h"
-
+#include "FRAMVar.h"
 
 #define FCLOCK 48000000
 

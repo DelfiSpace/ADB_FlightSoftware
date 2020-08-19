@@ -10,16 +10,12 @@
 
 BurnService* _bservicestub;
 
-BurnService::BurnService(MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestub->taskFunction();})
+BurnService::BurnService(MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestub->taskFunction();}, [](){_bservicestub->init();})
 {
     _bservicestub = this;
     fram = &fram_in;
     burnFlag = 0;
 
-    burnTime1.init(*fram, FRAM_ADB_BURNTIME_1);
-    burnTime2.init(*fram, FRAM_ADB_BURNTIME_2);
-    burnTime3.init(*fram, FRAM_ADB_BURNTIME_3);
-    burnTime4.init(*fram, FRAM_ADB_BURNTIME_4);
 
     //set GPIO settings
     //Antenna Feedback:
@@ -37,6 +33,14 @@ BurnService::BurnService(MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestu
     GPIO_setAsOutputPin(ANTENNA_PORT, ANTENNA2_BURN_PIN);
     GPIO_setAsOutputPin(ANTENNA_PORT, ANTENNA3_BURN_PIN);
     GPIO_setAsOutputPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
+}
+
+void BurnService::init()
+{
+    burnTime1.init(*fram, FRAM_ADB_BURNTIME_1, true, true);
+    burnTime2.init(*fram, FRAM_ADB_BURNTIME_2, true, true);
+    burnTime3.init(*fram, FRAM_ADB_BURNTIME_3, true, true);
+    burnTime4.init(*fram, FRAM_ADB_BURNTIME_4, true, true);
 }
 
 bool BurnService::notified( void )

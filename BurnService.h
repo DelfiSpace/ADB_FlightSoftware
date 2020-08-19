@@ -16,7 +16,7 @@
 #include "PeriodicTask.h"
 #include "Console.h"
 #include "MB85RS.h"
-#include "FRAMVar.h"
+#include "FRAMBackedVar.h"
 #include "FRAMMap.h"
 
 #define BURNSERVICE                  99
@@ -26,7 +26,7 @@
 #define BURNSERVICE_ALREADY_DEPLOYED 57
 #define BURNSERVICE_INVALID_ANTENNA  58
 
-#define MAX_BURN_TIME   10
+#define MAX_BURN_TIME   30
 
 #define FRAM_ADB_BURNTIME_1   FRAM_DEVICE_SPECIFIC_SPACE
 #define FRAM_ADB_BURNTIME_2   FRAM_ADB_BURNTIME_1 + 1
@@ -50,13 +50,15 @@ private:
     MB85RS* fram = 0;
     uint8_t burnFlag; //0:not burning, 1:burning_1, 2:burning_2 etc.
 
-    FRAMVar<uint8_t> burnTime1;
-    FRAMVar<uint8_t> burnTime2;
-    FRAMVar<uint8_t> burnTime3;
-    FRAMVar<uint8_t> burnTime4;
+    FRAMBackedVar<uint8_t> burnTime1;
+    FRAMBackedVar<uint8_t> burnTime2;
+    FRAMBackedVar<uint8_t> burnTime3;
+    FRAMBackedVar<uint8_t> burnTime4;
 
 public:
     BurnService(MB85RS& fram_in);
+
+    void init();
 
     bool notified( void );
 
