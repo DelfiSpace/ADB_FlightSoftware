@@ -10,12 +10,13 @@
 
 BurnService* _bservicestub;
 
-BurnService::BurnService(MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestub->taskFunction();}, [](){_bservicestub->init();})
+BurnService::BurnService(INA226& currentSensor_in, MB85RS& fram_in) : PeriodicTask(1000, [](){_bservicestub->taskFunction();}, [](){_bservicestub->init();})
 {
     _bservicestub = this;
     fram = &fram_in;
-    burnFlag = 0;
+    currentSensor = &currentSensor_in;
 
+    burnFlag = 0;
 
     //set GPIO settings
     //Antenna Feedback:
@@ -144,6 +145,7 @@ void BurnService::taskFunction()
             Console::log("Burning 4: %d seconds", (uint8_t)burnTime4);
             if(burnTime4 >= MAX_BURN_TIME){
                 Console::log("Burning 4: reached MAX_BURN_TIME");
+                burnFlag = 0;
                 //set burn Low
                 GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
             }
@@ -384,6 +386,37 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
             workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
             workingBuffer.setPayloadSize(2);
             break;
+        case 5:
+            Console::log("BurnService: measure Current");
+            if(command.getPayloadSize() == 2)
+            {
+                switch(command.getDataPayload()[1])
+                {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    short measurement = measureCurrent(command.getDataPayload()[1]);
+                    workingBuffer.getDataPayload()[1] = ((unsigned char *)&measurement)[1];
+                    workingBuffer.getDataPayload()[2] = ((unsigned char *)&measurement)[0];
+                    workingBuffer.setPayloadSize(3);
+                    Console::log("Current Measurement: %d mA", measurement);
+                    break;
+                default:
+                    Console::log("Invalid Antenna");
+                    workingBuffer.getDataPayload()[0] = 5;
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                    workingBuffer.setPayloadSize(2);
+                    break;
+                }
+            }
+            else
+            {
+                workingBuffer.getDataPayload()[0] = 5;
+                workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+                workingBuffer.setPayloadSize(2);
+            }
+            break;
         default:
             Console::log("BurnService: InvalidCommand");
             workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
@@ -414,6 +447,51 @@ bool BurnService::isDeployed(uint8_t antennaNumber)
     default:
         return false;
     }
+}
+
+short BurnService::measureCurrent(uint8_t antennaNumber){
+    if(!burnFlag){
+        switch(antennaNumber)
+        {
+        case 1:
+            MAP_GPIO_setOutputHighOnPin(ANTENNA_PORT, ANTENNA1_BURN_PIN);
+            break;
+        case 2:
+            MAP_GPIO_setOutputHighOnPin(ANTENNA_PORT, ANTENNA2_BURN_PIN);
+            break;
+        case 3:
+            MAP_GPIO_setOutputHighOnPin(ANTENNA_PORT, ANTENNA3_BURN_PIN);
+            break;
+        case 4:
+            MAP_GPIO_setOutputHighOnPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
+            break;
+        }
+    }
+
+    //delay like 10ms
+    __delay_cycles(48000000/(1000L/20)); // @suppress("Function cannot be resolved")
+    signed short current = 0;
+    currentSensor->getCurrent(current);
+
+    if(!burnFlag){
+        switch(antennaNumber)
+        {
+        case 1:
+            MAP_GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA1_BURN_PIN);
+            break;
+        case 2:
+            MAP_GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA2_BURN_PIN);
+            break;
+        case 3:
+            MAP_GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA3_BURN_PIN);
+            break;
+        case 4:
+            MAP_GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
+            break;
+        }
+    }
+
+    return current;
 }
 
 

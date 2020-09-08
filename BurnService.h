@@ -18,6 +18,7 @@
 #include "MB85RS.h"
 #include "FRAMBackedVar.h"
 #include "FRAMMap.h"
+#include "INA226.h"
 
 #define BURNSERVICE                  99
 #define BURNSERVICE_NO_ERROR         0
@@ -49,6 +50,7 @@ class BurnService: public PeriodicTask, public Service
 private:
     MB85RS* fram = 0;
     uint8_t burnFlag; //0:not burning, 1:burning_1, 2:burning_2 etc.
+    INA226* currentSensor;
 
     FRAMBackedVar<uint8_t> burnTime1;
     FRAMBackedVar<uint8_t> burnTime2;
@@ -56,7 +58,7 @@ private:
     FRAMBackedVar<uint8_t> burnTime4;
 
 public:
-    BurnService(MB85RS& fram_in);
+    BurnService(INA226& currentSensor_in, MB85RS& fram_in);
 
     void init();
 
@@ -67,6 +69,8 @@ public:
     bool process( DataMessage &command, DataMessage &workingBbuffer );
 
     bool isDeployed(uint8_t antenna);
+
+    short measureCurrent(uint8_t antenna);
 };
 
 

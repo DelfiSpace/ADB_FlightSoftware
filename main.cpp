@@ -20,7 +20,7 @@ PQ9Bus pq9bus(3, GPIO_PORT_P9, GPIO_PIN0);
 // services running in the system
 PingService ping;
 ResetService reset( GPIO_PORT_P4, GPIO_PIN0, GPIO_PORT_P4, GPIO_PIN2 );
-BurnService burnService(fram);
+BurnService burnService(powerBus, fram);
 HousekeepingService<ADBTelemetryContainer> hk;
 FRAMService framService(fram);
 
