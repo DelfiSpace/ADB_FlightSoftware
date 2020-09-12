@@ -93,6 +93,9 @@ void acquireTelemetry(ADBTelemetryContainer *tc)
     tc->setTMPStatus(!temp.getTemperature(t));
     tc->setTemperature(t);
 
+    Console::log("ADB Temperature: %s%d C", (tc->getTemperature()<0)?"-":"", (tc->getTemperature()<0)?-tc->getTemperature():tc->getTemperature());
+
+
     // measure the power bus
     tc->setINAStatus((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
     tc->setVoltage(v);
@@ -104,7 +107,7 @@ void acquireTelemetry(ADBTelemetryContainer *tc)
  * main.c
  */
 void main(void)
-{
+    {
     // initialize the MCU:
     // - clock source
     // - clock tree

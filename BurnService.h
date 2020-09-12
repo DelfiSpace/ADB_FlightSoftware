@@ -52,10 +52,16 @@ private:
     uint8_t burnFlag; //0:not burning, 1:burning_1, 2:burning_2 etc.
     INA226* currentSensor;
 
-    FRAMBackedVar<uint8_t> burnTime1;
-    FRAMBackedVar<uint8_t> burnTime2;
-    FRAMBackedVar<uint8_t> burnTime3;
-    FRAMBackedVar<uint8_t> burnTime4;
+    uint8_t currentBurnTime1 = 0;
+    uint8_t currentBurnTime2 = 0;
+    uint8_t currentBurnTime3 = 0;
+    uint8_t currentBurnTime4 = 0;
+
+
+    FRAMBackedVar<uint8_t> totalBurnTime1;
+    FRAMBackedVar<uint8_t> totalBurnTime2;
+    FRAMBackedVar<uint8_t> totalBurnTime3;
+    FRAMBackedVar<uint8_t> totalBurnTime4;
 
 public:
     BurnService(INA226& currentSensor_in, MB85RS& fram_in);
