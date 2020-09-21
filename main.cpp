@@ -93,13 +93,13 @@ void acquireTelemetry(ADBTelemetryContainer *tc)
     tc->setTMPStatus(!temp.getTemperature(t));
     tc->setTemperature(t);
 
-    Console::log("ADB Temperature: %s%d C", (tc->getTemperature()<0)?"-":"", (tc->getTemperature()<0)?-tc->getTemperature():tc->getTemperature());
-
-
     // measure the power bus
     tc->setINAStatus((!powerBus.getVoltage(v)) & (!powerBus.getCurrent(i)));
     tc->setVoltage(v);
     tc->setCurrent(i);
+
+    Console::log("ADB Temperature: %s%d C , | Current : %d mA", (tc->getTemperature()<0)?"-":"", (tc->getTemperature()<0)?-tc->getTemperature():tc->getTemperature(), tc->getCurrent());
+
 
 }
 
