@@ -56,11 +56,15 @@ bool BurnService::notified( void )
 
 void BurnService::taskFunction()
 {
-    Console::log("BurnTask: Burning.. %d", burnFlag);
+    if(ignoreSwitch){
+        Console::log("BurnTask: Burning.. %d !IGNORING SWITCH!", burnFlag);
+    }else{
+        Console::log("BurnTask: Burning.. %d ", burnFlag);
+    }
     switch(burnFlag)
     {
     case 1:
-        if(isDeployed(1))
+        if(isDeployed(1) && !ignoreSwitch)
         {
             Console::log("Burning 1: Succes!");
             burnFlag = 2;
@@ -79,12 +83,17 @@ void BurnService::taskFunction()
                 Console::log("Burning 1: reached MAX_BURN_TIME");
                 //set burn Low
                 GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA1_BURN_PIN);
-                burnFlag = 2;
+                if(!ignoreSwitch){
+                    burnFlag = 2;
+                }else{
+                    burnFlag = 0;
+                    ignoreSwitch = false;
+                }
             }
             break;
         }
     case 2:
-        if(isDeployed(2))
+        if(isDeployed(2) && !ignoreSwitch)
         {
             Console::log("Burning 2: Succes!");
             burnFlag = 3;
@@ -103,12 +112,17 @@ void BurnService::taskFunction()
                 Console::log("Burning 1: reached MAX_BURN_TIME");
                 //set burn Low
                 GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA2_BURN_PIN);
-                burnFlag = 3;
+                if(!ignoreSwitch){
+                    burnFlag = 3;
+                }else{
+                    burnFlag = 0;
+                    ignoreSwitch = false;
+                }
             }
             break;
         }
     case 3:
-        if(isDeployed(3))
+        if(isDeployed(3) && !ignoreSwitch)
         {
             Console::log("Burning 3: Succes!");
             //set burn LOW
@@ -127,12 +141,17 @@ void BurnService::taskFunction()
                 Console::log("Burning 1: reached MAX_BURN_TIME");
                 //set burn Low
                 GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA3_BURN_PIN);
-                burnFlag = 4;
+                if(!ignoreSwitch){
+                    burnFlag = 4;
+                }else{
+                    burnFlag = 0;
+                    ignoreSwitch = false;
+                }
             }
             break;
         }
     case 4:
-        if(isDeployed(4))
+        if(isDeployed(4) && !ignoreSwitch)
         {
             Console::log("Burning 4: Succes!");
             burnFlag = 0;
@@ -150,6 +169,9 @@ void BurnService::taskFunction()
             if(currentBurnTime4 >= MAX_BURN_TIME){
                 Console::log("Burning 4: reached MAX_BURN_TIME");
                 burnFlag = 0;
+                if(ignoreSwitch){
+                    ignoreSwitch = false;
+                }
                 //set burn Low
                 GPIO_setOutputLowOnPin(ANTENNA_PORT, ANTENNA4_BURN_PIN);
             }
@@ -301,31 +323,40 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
             Console::log("BurnService: getBurnTime");
             if(command.getPayloadSize() == 2)
             {
+                short burnTime = 0;
                 switch(command.getDataPayload()[1])
                 {
                 case 1:
-                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) totalBurnTime1);
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (short) totalBurnTime1);
                     workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
-                    workingBuffer.getDataPayload()[1] = (uint8_t) totalBurnTime1;
-                    workingBuffer.setPayloadSize(2);
+                    burnTime= totalBurnTime1;
+                    ((unsigned char *)&burnTime)[1] = command.getDataPayload()[1];
+                    ((unsigned char *)&burnTime)[0] = command.getDataPayload()[2];
+                    workingBuffer.setPayloadSize(3);
                     break;
                 case 2:
-                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) totalBurnTime2);
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (short) totalBurnTime2);
                     workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
-                    workingBuffer.getDataPayload()[1] = (uint8_t) totalBurnTime2;
-                    workingBuffer.setPayloadSize(2);
+                    burnTime = totalBurnTime2;
+                    ((unsigned char *)&burnTime)[1] = command.getDataPayload()[1];
+                    ((unsigned char *)&burnTime)[0] = command.getDataPayload()[2];
+                    workingBuffer.setPayloadSize(3);
                     break;
                 case 3:
-                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) totalBurnTime3);
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (short) totalBurnTime3);
                     workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
-                    workingBuffer.getDataPayload()[1] = (uint8_t) totalBurnTime3;
-                    workingBuffer.setPayloadSize(2);
+                    burnTime = totalBurnTime3;
+                    ((unsigned char *)&burnTime)[1] = command.getDataPayload()[1];
+                    ((unsigned char *)&burnTime)[0] = command.getDataPayload()[2];
+                    workingBuffer.setPayloadSize(3);
                     break;
                 case 4:
-                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (uint8_t) totalBurnTime4);
+                    Console::log("Antenna %d burntime: %d", command.getDataPayload()[1], (short) totalBurnTime4);
                     workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
-                    workingBuffer.getDataPayload()[1] = (uint8_t) totalBurnTime4;
-                    workingBuffer.setPayloadSize(2);
+                    burnTime = totalBurnTime4;
+                    ((unsigned char *)&burnTime)[1] = command.getDataPayload()[1];
+                    ((unsigned char *)&burnTime)[0] = command.getDataPayload()[2];
+                    workingBuffer.setPayloadSize(3);
                     break;
                 default:
                     Console::log("Invalid Antenna");
@@ -424,6 +455,36 @@ bool BurnService::process( DataMessage &command, DataMessage &workingBuffer )
                     workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
                     workingBuffer.setPayloadSize(2);
                     break;
+                }
+            }
+            else
+            {
+                workingBuffer.getDataPayload()[0] = 5;
+                workingBuffer.getDataPayload()[1] = BURNSERVICE_UNKNOWN_CMD;
+                workingBuffer.setPayloadSize(2);
+            }
+            break;
+        case 7:
+            Console::log("BurnService: BURN 30 SEC OVERRIDE");
+            if(command.getPayloadSize() == 2)
+            {
+                if(command.getDataPayload()[1] >= 1 && command.getDataPayload()[1] <= 4)
+                {
+                    burnFlag = command.getDataPayload()[1];
+                    ignoreSwitch = true;
+                    currentBurnTime1 = 0;
+                    currentBurnTime2 = 0;
+                    currentBurnTime3 = 0;
+                    currentBurnTime4 = 0;
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_NO_ERROR;
+                    workingBuffer.setPayloadSize(2);
+                }
+                else
+                {
+                    workingBuffer.getDataPayload()[0] = command.getDataPayload()[0];
+                    workingBuffer.getDataPayload()[1] = BURNSERVICE_INVALID_ANTENNA;
+                    workingBuffer.setPayloadSize(2);
                 }
             }
             else

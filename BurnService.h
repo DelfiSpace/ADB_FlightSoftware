@@ -30,9 +30,9 @@
 #define MAX_BURN_TIME   30
 
 #define FRAM_ADB_BURNTIME_1   FRAM_DEVICE_SPECIFIC_SPACE
-#define FRAM_ADB_BURNTIME_2   FRAM_ADB_BURNTIME_1 + 1
-#define FRAM_ADB_BURNTIME_3   FRAM_ADB_BURNTIME_2 + 1
-#define FRAM_ADB_BURNTIME_4   FRAM_ADB_BURNTIME_3 + 1
+#define FRAM_ADB_BURNTIME_2   FRAM_ADB_BURNTIME_1 + 2
+#define FRAM_ADB_BURNTIME_3   FRAM_ADB_BURNTIME_2 + 2
+#define FRAM_ADB_BURNTIME_4   FRAM_ADB_BURNTIME_3 + 2
 
 #define ANTENNA_PORT GPIO_PORT_P3
 #define ANTENNA1_FEEDBACK_PIN GPIO_PIN0
@@ -57,11 +57,12 @@ private:
     uint8_t currentBurnTime3 = 0;
     uint8_t currentBurnTime4 = 0;
 
+    bool ignoreSwitch = false;
 
-    FRAMBackedVar<uint8_t> totalBurnTime1;
-    FRAMBackedVar<uint8_t> totalBurnTime2;
-    FRAMBackedVar<uint8_t> totalBurnTime3;
-    FRAMBackedVar<uint8_t> totalBurnTime4;
+    FRAMBackedVar<short> totalBurnTime1;
+    FRAMBackedVar<short> totalBurnTime2;
+    FRAMBackedVar<short> totalBurnTime3;
+    FRAMBackedVar<short> totalBurnTime4;
 
 public:
     BurnService(INA226& currentSensor_in, MB85RS& fram_in);
